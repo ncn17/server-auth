@@ -8,7 +8,7 @@
 const globaErrors = (err, req, res, next) => {
   console.log(err.stack);
   res.status(500).json({
-    message: 'Create user failled : server error',
+    message: 'Server Error : operation failled !',
   });
 };
 

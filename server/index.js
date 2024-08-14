@@ -2,10 +2,10 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
 
-import CreateToken from './lib/tokenHelper.js';
+import { HashPassword, ComparePassword, CreateToken } from './lib/AppHelper.js';
 import UserModel from './models/users.js';
 import globaErrors from './middlewares/globalError.js';
 
@@ -20,13 +20,6 @@ app.use(
     credentials: true,
   })
 );
-
-// configuration
-const PORT = process.env.PORT;
-const ACCESS_TOKEN_KEY = 'access-token-key-xclerc@1710';
-const REFRESH_TOKEN_KEY = 'refresh-token-key-xclerc@1710';
-const ACCESS_TOKEN = 'auth_token';
-const REFRESH_TOKEN = 'auth_refresh_token';
 
 // routes
 
@@ -50,7 +43,7 @@ app.post('/user/create', async (req, res, next) => {
       });
     }
 
-    var hashedPassword = await bcrypt.hash(password, process.env.PASSWORD_SALT);
+    var hashedPassword = await HashPassword(password);
     await UserModel.create({
       name,
       email,
@@ -64,11 +57,50 @@ app.post('/user/create', async (req, res, next) => {
   }
 });
 
+/**
+ * SignUp auth user and get credentials
+ */
+app.post('/login', async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (email.length < 5 || password.length < 8) {
+      return res
+        .status(400)
+        .json({ message: 'Error : bad email or password !' });
+    }
+
+    var user = await UserModel.findOne({ email: email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: 'Error : bad email or password !' });
+    }
+
+    var isValidPassword = await ComparePassword(password, user.password);
+    if (!isValidPassword) {
+      return res
+        .status(400)
+        .json({ message: 'Error : bad email or password !' });
+    }
+
+    const data = { email: user.email, name: user.name };
+
+    res.status(200).json({
+      message: 'Login sucess !',
+      token: CreateToken(data, process.env.TOKEN_KEY, '15m'),
+      refreshToken: CreateToken(data, process.env.REFRESH_TOKEN_KEY, '30d'),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.get('/', (req, res) => {
   res.status(200).send('Hello World');
 });
 
 app.use(globaErrors);
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
   console.error(
