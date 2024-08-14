@@ -9,7 +9,33 @@ import bcrypt from 'bcrypt';
  * @returns string of json token
  */
 const CreateToken = (data, key, expireDate) => {
-  return jwt.sign(data, key, { algorithm: 'HS256' }, { expiresIn: expireDate });
+  return jwt.sign(data, key, { expiresIn: expireDate });
+};
+
+/**
+ * Generate client auth tokens
+ * @param {{}} data
+ * @returns {token , refreshToken}
+ */
+const GenerateTokens = (data) => {
+  return {
+    token: CreateToken(data, process.env.TOKEN_KEY, 5 * 60),
+    refreshToken: CreateToken(
+      data,
+      process.env.REFRESH_TOKEN_KEY,
+      15 * 60 * 60
+    ),
+  };
+};
+
+/**
+ * Decode jwt token
+ * @param {string} token
+ * @param {string} key
+ * @returns object of decode values
+ */
+const DecryptToken = (token, key, callBack) => {
+  jwt.verify(token, key, async (err, decoded) => await callBack(err, decoded));
 };
 
 /**
@@ -29,4 +55,10 @@ const HashPassword = async (password) =>
 const ComparePassword = async (plainTextPassword, hash) =>
   await bcrypt.compare(plainTextPassword, hash);
 
-export { CreateToken, HashPassword, ComparePassword };
+export {
+  CreateToken,
+  GenerateTokens,
+  HashPassword,
+  ComparePassword,
+  DecryptToken,
+};
