@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 
 import CreateToken from './lib/tokenHelper.js';
 import UserModel from './models/users.js';
+import globaErrors from './middlewares/globalError.js';
 
 dotenv.config();
 const app = express();
@@ -50,7 +51,7 @@ app.post('/user/create', async (req, res, next) => {
     }
 
     var hashedPassword = await bcrypt.hash(password, process.env.PASSWORD_SALT);
-    var response = await UserModel.create({
+    await UserModel.create({
       name,
       email,
       password: hashedPassword,
@@ -59,16 +60,15 @@ app.post('/user/create', async (req, res, next) => {
       message: 'User created succesfully !',
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: 'Create user failled : server error',
-    });
+    next(error);
   }
 });
 
 app.get('/', (req, res) => {
   res.status(200).send('Hello World');
 });
+
+app.use(globaErrors);
 
 app.listen(PORT, () => {
   console.error(
