@@ -1,4 +1,5 @@
-import express from 'express';
+import express, { Router } from 'express';
+import serverless from 'serverless-http';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -27,10 +28,12 @@ app.use(
 
 // routes
 
+const router = Router();
+
 /**
  * Create or register a new user on database
  */
-app.post('/user/create', async (req, res, next) => {
+router.post('/user/create', async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
@@ -64,7 +67,7 @@ app.post('/user/create', async (req, res, next) => {
 /**
  * SignUp auth user and get credentials
  */
-app.post('/login', async (req, res, next) => {
+router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -158,7 +161,7 @@ const refreshToken = async (req, res, next) => {
 /**
  * Get client information by authentification cookies
  */
-app.get('/get/me', authenticateUser, async (req, res, next) => {
+router.get('/get/me', authenticateUser, async (req, res, next) => {
   var user = await UserModel.findOne({
     email: res.locals.email,
   });
@@ -167,12 +170,16 @@ app.get('/get/me', authenticateUser, async (req, res, next) => {
   res.json(user);
 });
 
-app.get('/', authenticateUser, (req, res) => {
+router.get('/', (req, res) => {
   res.status(200).send('Hello World');
 });
 
+app.use('/api/', router);
+
 app.use(globaErrors);
 const PORT = process.env.PORT;
+
+export const handler = serverless(app);
 
 app.listen(PORT, () => {
   console.error(
