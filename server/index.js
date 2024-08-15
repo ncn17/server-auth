@@ -1,5 +1,4 @@
 import express, { Router } from 'express';
-import serverless from 'serverless-http';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -177,10 +176,8 @@ router.get('/', (req, res) => {
 app.use('/api/', router);
 
 app.use(globaErrors);
+
 const PORT = process.env.PORT;
-
-export const handler = serverless(app);
-
 app.listen(PORT, () => {
   console.error(
     `server-auth is running on port : ${PORT} \n open on : http://127.0.0.1:${PORT}`
