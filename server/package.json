@@ -12,6 +12,9 @@
     "express",
     "jwt"
   ],
+  "engines": {
+    "node": "20.x"
+  },
   "type": "module",
   "author": "clerc nicephore nkounkou",
   "license": "MIT",
