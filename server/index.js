@@ -169,8 +169,8 @@ router.get('/get/me', authenticateUser, async (req, res, next) => {
   res.json(user);
 });
 
-router.get('/', (req, res) => {
-  res.status(200).send('Hello World');
+app.get('/', (req, res) => {
+  res.status(200).send('<h1>Hello World !</h1>');
 });
 
 app.use('/api/', router);
