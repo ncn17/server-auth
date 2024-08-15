@@ -17,6 +17,8 @@
     "node": "20.x"
   },
   "type": "module",
+  "module": "CommonJS",
+  "moduleResolution": "Node",
   "author": "clerc nicephore nkounkou",
   "license": "MIT",
   "dependencies": {
