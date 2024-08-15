@@ -19,11 +19,11 @@ const CreateToken = (data, key, expireDate) => {
  */
 const GenerateTokens = (data) => {
   return {
-    token: CreateToken(data, process.env.TOKEN_KEY, 5 * 60),
+    token: CreateToken(data, process.env.TOKEN_KEY, process.env.TokenTime),
     refreshToken: CreateToken(
       data,
       process.env.REFRESH_TOKEN_KEY,
-      15 * 60 * 60
+      process.env.RefreshTokenTime
     ),
   };
 };

@@ -98,12 +98,24 @@ app.post('/login', async (req, res, next) => {
   }
 });
 
+/**
+ * Global function for authentificate user by token or refresh Token
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 const authenticateUser = async (req, res, next) => {
-  const token = req.cookies.token;
-  if (!token) {
+  let authToken = req.headers['authorization'];
+  authToken =
+    authToken != undefined && authToken.length > 150
+      ? authToken.split(' ')[1]
+      : undefined;
+
+  if (!authToken) {
     return await refreshToken(req, res, next);
   }
-  DecryptToken(token, process.env.TOKEN_KEY, async (err, decodedValue) => {
+  DecryptToken(authToken, process.env.TOKEN_KEY, async (err, decodedValue) => {
     if (err) {
       console.log(err);
       return await refreshToken(req, res, next);
@@ -118,8 +130,8 @@ const refreshToken = async (req, res, next) => {
     res.status(401).json({ message: 'Error : Unauthorized user !' });
   };
 
-  const refreshToken = req.cookies.refreshToken;
-  if (!refreshToken) {
+  const refreshToken = req.headers['refreshtoken'];
+  if (!refreshToken || refreshToken.length < 150) {
     return UnAuthorizedResponse(res);
   }
 
