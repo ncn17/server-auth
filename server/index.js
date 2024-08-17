@@ -15,6 +15,7 @@ app.use(
   cors({
     origin: [process.env.CLIENT_ORIGN],
     credentials: true,
+    exposedHeaders: 'Token',
   })
 );
 

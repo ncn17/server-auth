@@ -16,7 +16,7 @@ const Register = async (req, res, next) => {
 
     var user = await UserModel.findOne({ email: email });
     if (user) {
-      return res.status(400).send({
+      return res.status(409).send({
         message: 'User email already used !',
       });
     }
