@@ -19,6 +19,12 @@ const UserSchema = new mongoose.Schema({
     unique: false,
     validate: (value) => value.length > 5,
   },
+  refreshToken: {
+    type: String,
+    required: false,
+    unique: false,
+    validate: (value) => value.length > 100,
+  },
 });
 
 const UserModel = mongoose.model('users', UserSchema);

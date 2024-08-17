@@ -1,4 +1,5 @@
 import { DecryptToken, GenerateTokens } from '../lib/AppHelper.js';
+import UserModel from '../models/users.js';
 
 /**
  * Return custom unAuthorize response
@@ -45,22 +46,34 @@ const RefreshToken = async (req, res, next) => {
     return UnauthorizedResponse(res);
   }
 
-  DecryptToken(refreshToken, process.env.TOKEN_KEY, (err, decodedValue) => {
-    if (err) {
-      console.log(err);
+  DecryptToken(
+    refreshToken,
+    process.env.TOKEN_KEY,
+    async (err, decodedValue) => {
+      if (err) {
+        console.log(err);
+        return UnauthorizedResponse(res);
+      }
+
+      var user = await UserModel.findOne({ email: decodedValue.email });
+      if (user && user.refreshToken === refreshToken) {
+        const { token, refreshToken: newRefreshToken } = GenerateTokens(
+          {
+            email: decodedValue.email,
+            name: decodedValue.name,
+          },
+          res
+        );
+        //save user with refreshToken
+        user.refreshToken = newRefreshToken;
+        await user.save();
+
+        return res.json({ message: 'Refresh token success !', token });
+      }
+
       return UnauthorizedResponse(res);
     }
-    //Generate cookies for refresh token and return auth token
-    GenerateTokens(
-      {
-        email: decodedValue.email,
-        name: decodedValue.name,
-      },
-      res
-    );
-
-    res.json({ message: 'Refresh token success !' });
-  });
+  );
 };
 
 export { AuthenticateUser, RefreshToken };

@@ -7,18 +7,14 @@ import bcrypt from 'bcrypt';
  * @returns {token , refreshToken}
  */
 const GenerateTokens = (data, res) => {
-  console.log(process.env.TokenTime);
-  res.set(
-    'token',
-    jwt.sign(data, process.env.TOKEN_KEY, {
-      expiresIn: process.env.TokenTime,
-    })
-  );
+  const token = jwt.sign(data, process.env.TOKEN_KEY, {
+    expiresIn: process.env.TokenTime,
+  });
 
-  // set refreshToken cookie
   const refreshToken = jwt.sign(data, process.env.TOKEN_KEY, {
     expiresIn: process.env.RefreshTokenTime,
   });
+  // set refreshToken cookie
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     sameSite: 'none',
@@ -27,6 +23,8 @@ const GenerateTokens = (data, res) => {
     partitioned: true,
     maxAge: process.env.RefreshCookieTime,
   });
+
+  return { token, refreshToken };
 };
 
 /**

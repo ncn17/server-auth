@@ -13,7 +13,7 @@ const Login = async (req, res, next) => {
     };
 
     const { email, password } = req.body;
-    if (email.length < 5 || password.length < 8) {
+    if (!email || email.length < 5 || !password || password.length < 8) {
       return GetBadRequestResponse(res);
     }
 
@@ -23,13 +23,20 @@ const Login = async (req, res, next) => {
     }
 
     var isValidPassword = await ComparePassword(password, user.password);
-    if (!isValidPassword) {
-      return GetBadRequestResponse(res);
-    }
-    //Generate cookies for refresh token and return auth token
-    GenerateTokens({ email: user.email, name: user.name }, res);
+    if (isValidPassword) {
+      //Generate cookies for refresh token and return auth token
+      const { token, refreshToken } = GenerateTokens(
+        { email: user.email, name: user.name },
+        res
+      );
+      //save user with refreshToken
+      user.refreshToken = refreshToken;
+      await user.save();
 
-    res.status(200).json({ message: 'Login sucess !' });
+      return res.status(200).json({ message: 'Login sucess !', token });
+    }
+
+    return GetBadRequestResponse(res);
   } catch (error) {
     next(error);
   }
