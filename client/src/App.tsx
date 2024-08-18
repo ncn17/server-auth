@@ -3,6 +3,10 @@ import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import { Register } from './pages/Register';
 import { Login } from './pages/Login';
+import { AuthProvider } from './context/authContext';
+import Profile from './pages/Profile';
+import Header from './components/header';
+import PrivateRoutes from './components/privateRoutes';
 
 /**
  * Build a custom App Wrapped
@@ -12,10 +16,14 @@ import { Login } from './pages/Login';
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Register />} />
       <Route path="*" element={<NotFound />} />
+
+      <Route element={<PrivateRoutes />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/profile" element={<Profile />} />
+      </Route>
     </Routes>
   );
 }
@@ -28,7 +36,10 @@ export function App() {
 export function WrappedApp() {
   return (
     <BrowserRouter>
-      <App />
+      <AuthProvider>
+        <Header />
+        <App />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

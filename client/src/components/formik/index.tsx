@@ -7,7 +7,7 @@ type AppFormType = {
   children: React.ReactNode,
   onSubmit: ((
     values: object,
-    formikHelpers: FormikHelpers<object>
+    action: FormikHelpers<object>
   ) => void | Promise<any>) &
     React.FormEvent<Element>,
 };

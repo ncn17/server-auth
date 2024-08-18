@@ -31,6 +31,7 @@ export const TextFieldForm: FC<CustomTextFieldProps> = ({
       name={name}
       error={!!meta.touched && !!meta.error}
       helperText={meta.touched && meta.error}
+      sx={{ textTransform: 'none' }}
       {...props}
     />
   );
