@@ -14,6 +14,7 @@ interface AuthProviderProps {
 }
 
 type AuthUserProps = {
+  id: string,
   name: string,
   email: string,
 } | null;

@@ -1,13 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FormikHelpers } from 'formik';
 import * as yup from 'yup';
-import axios from 'axios';
 import { AppForm } from '../components/formik';
 import { TextFieldForm } from '../components/texfieldForm';
-import { useAuthApi } from '../hooks/useAuthApi';
-import { useAuth } from '../context/authContext';
+import { useAuthApi, UserConnect } from '../hooks/useAuthApi';
 
 const controlSchema = yup.object().shape({
   email: yup.string().email('Invalid email passed').required('required'),
@@ -15,43 +13,28 @@ const controlSchema = yup.object().shape({
 });
 
 export const Login = () => {
-  const { authUser, setAccessToken } = useAuth();
-
   const navigate = useNavigate();
   const location = useLocation();
-
-  useEffect(() => {
-    if (authUser) {
-      navigate('/');
-    }
-  }, [authUser, navigate]);
-
   const { signUp } = useAuthApi();
-  const [errMsg, setErrMsg] = useState('');
+  const [errMsg, setErrMsg] = useState<string | undefined>('');
 
   const handleFormSubmit: any = async (
-    values: object,
+    values: UserConnect,
     { resetForm, setFieldValue }: FormikHelpers<object>
   ) => {
-    try {
-      const res = await signUp(values);
-
+    const res = await signUp(values);
+    if (res.sucess) {
       resetForm();
       setErrMsg(res.data.message);
-      setAccessToken(res.data.token);
-      navigate('/');
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 400) {
-          setErrMsg('Incorrect email or password !');
-        } else {
-          setErrMsg('Login failled !');
-        }
+
+      if (location.state?.from) {
+        navigate(location.state.from);
       } else {
-        setErrMsg('Login failled !');
+        navigate('/');
       }
+    } else {
+      setErrMsg(res.message);
       setFieldValue('password', '');
-      console.log(error);
     }
   };
 
