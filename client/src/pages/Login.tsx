@@ -1,4 +1,5 @@
-import { useLayoutEffect, useState } from 'react';
+/* eslint-disable react/jsx-no-useless-fragment */
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FormikHelpers } from 'formik';
@@ -17,23 +18,25 @@ export const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signUp } = useAuthApi();
-  const { authUser } = useAuth();
+  const { authUser, isLoading, setIsLoading } = useAuth();
   const [errMsg, setErrMsg] = useState<string | undefined>('');
 
+  // check user authenticated
   useLayoutEffect(() => {
     if (authUser) {
       navigate('/');
     }
-  }, [authUser, navigate]);
+  }, [authUser]);
 
   const handleFormSubmit: any = async (
     values: any,
     { resetForm, setFieldValue }: FormikHelpers<object>
   ) => {
+    setIsLoading(true);
     const res = await signUp(values);
+    setIsLoading(false);
     if (res.sucess) {
       resetForm();
-      setErrMsg(res.data.message);
 
       if (location.state?.from) {
         navigate(location.state.from);
@@ -47,104 +50,112 @@ export const Login = () => {
   };
 
   return (
-    <Box
-      sx={{ height: '90vh' }}
-      width="1000px"
-      margin="0 auto"
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-    >
-      <Box sx={{ width: '350px', border: '1px solid grey', padding: '20px' }}>
-        <Typography variant="h1" fontSize="20px" m={2}>
-          Login
-        </Typography>
+    <>
+      {isLoading ? (
+        <p>loading....</p>
+      ) : (
+        <Box
+          sx={{ height: '90vh' }}
+          width="1000px"
+          margin="0 auto"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Box
+            sx={{ width: '350px', border: '1px solid grey', padding: '20px' }}
+          >
+            <Typography variant="h1" fontSize="20px" m={2}>
+              Login
+            </Typography>
 
-        {errMsg && (
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 'normal',
-              textTransform: 'none',
-              color: 'red',
-              fontSize: '14px',
-            }}
-            margin="10px 0"
-          >
-            Error : {errMsg}
-          </Typography>
-        )}
-        <Box>
-          <AppForm
-            initialValues={{
-              email: '',
-              password: '',
-            }}
-            validationSchema={controlSchema}
-            onSubmit={handleFormSubmit}
-          >
-            <Box display="flex" flexDirection="column" gap="10px">
-              <TextFieldForm
-                label="email"
-                name="email"
-                size="small"
-                variant="outlined"
-              />
-              <Box sx={{ marginTop: '0px', textAlign: 'right' }}>
+            {errMsg && (
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 'normal',
+                  textTransform: 'none',
+                  color: 'red',
+                  fontSize: '14px',
+                }}
+                margin="10px 0"
+              >
+                Error : {errMsg}
+              </Typography>
+            )}
+            <Box>
+              <AppForm
+                initialValues={{
+                  email: '',
+                  password: '',
+                }}
+                validationSchema={controlSchema}
+                onSubmit={handleFormSubmit}
+              >
+                <Box display="flex" flexDirection="column" gap="10px">
+                  <TextFieldForm
+                    label="email"
+                    name="email"
+                    size="small"
+                    variant="outlined"
+                  />
+                  <Box sx={{ marginTop: '0px', textAlign: 'right' }}>
+                    <Link
+                      to="/signup"
+                      style={{
+                        textTransform: 'none',
+                        color: 'blue',
+                        textDecoration: 'none',
+                        margin: '0px',
+                      }}
+                    >
+                      Mot de passe oublier ?
+                    </Link>
+                  </Box>
+                  <TextFieldForm
+                    label="password"
+                    name="password"
+                    size="small"
+                    variant="outlined"
+                  />
+                </Box>
+                <Button
+                  type="submit"
+                  fullWidth
+                  sx={{
+                    margin: '20px 0',
+                    backgroundColor: 'green',
+                    textTransform: 'none',
+                  }}
+                  variant="contained"
+                >
+                  Connexion
+                </Button>
+              </AppForm>
+
+              <Typography
+                style={{
+                  textTransform: 'none',
+                  textDecoration: 'none',
+                }}
+              >
+                Pas encore Inscrit ?{' '}
                 <Link
                   to="/signup"
                   style={{
                     textTransform: 'none',
                     color: 'blue',
                     textDecoration: 'none',
-                    margin: '0px',
+                    fontWeight: 'bold',
                   }}
                 >
-                  Mot de passe oublier ?
+                  Creer un compte
                 </Link>
-              </Box>
-              <TextFieldForm
-                label="password"
-                name="password"
-                size="small"
-                variant="outlined"
-              />
+              </Typography>
             </Box>
-            <Button
-              type="submit"
-              fullWidth
-              sx={{
-                margin: '20px 0',
-                backgroundColor: 'green',
-                textTransform: 'none',
-              }}
-              variant="contained"
-            >
-              Connexion
-            </Button>
-          </AppForm>
-
-          <Typography
-            style={{
-              textTransform: 'none',
-              textDecoration: 'none',
-            }}
-          >
-            Pas encore Inscrit ?{' '}
-            <Link
-              to="/signup"
-              style={{
-                textTransform: 'none',
-                color: 'blue',
-                textDecoration: 'none',
-                fontWeight: 'bold',
-              }}
-            >
-              Creer un compte
-            </Link>
-          </Typography>
+          </Box>
         </Box>
-      </Box>
-    </Box>
+      )}
+    </>
   );
 };

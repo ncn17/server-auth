@@ -1,22 +1,15 @@
+/* eslint-disable @typescript-eslint/return-await */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
+import { useEffect, useLayoutEffect } from 'react';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
-import { useEffect, useLayoutEffect } from 'react';
 import { useAuth } from './useAuth';
-import { CookieApp } from '../shared/constants/cookieapp';
 import {
   IApiResponse,
   IUserConnect,
 } from '../shared/interfaces/models.interface';
-
-export const authApi = axios.create({
-  baseURL: 'http://127.0.0.1:5017/api',
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import { CookieApp } from '../shared/constants/cookieapp';
 
 /**
  * Base service for call server api
@@ -24,14 +17,24 @@ export const authApi = axios.create({
  * @returns {httpClient}
  */
 export const useAuthApi = () => {
-  const { setAccessToken, setAuthUser } = useAuth();
+  const { setAccessToken, setAuthUser, logOut } = useAuth();
 
-  useEffect(() => {
+  const ApiUrl = 'http://127.0.0.1:5017/api';
+  const authApi = axios.create({
+    baseURL: ApiUrl,
+    withCredentials: true,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  useLayoutEffect(() => {
     authApi.interceptors.request.use(
       (config): InternalAxiosRequestConfig => {
+        // get token from cookie and assign
         const accessToken = Cookies.get(CookieApp.ACCESS_COOKIE);
-        console.log('req => ', config);
         if (accessToken && accessToken.length > 100) {
+          // console.log(accessToken);
           config.headers.Authorization = `Bearer ${accessToken}`;
         }
         return config;
@@ -45,23 +48,31 @@ export const useAuthApi = () => {
       (response) => response,
       async (error): Promise<AxiosError> => {
         const originalRequest = error.config;
-
-        if (error.response.status === 401 && !originalRequest.retry) {
-          originalRequest.retry = true;
-          console.log('refresh => ');
-          // try refresh token
-          const { data } = await authApi.get('refresh-token');
-          // save and set auth token
-          setAccessToken(data.token);
-          originalRequest.headers.Authorization = `Bearer ${data.token}`;
-
-          return authApi(originalRequest);
+        if (error.response.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          try {
+            // try to refresh the acess token
+            const { data } = await axios.get('refresh-token', {
+              baseURL: ApiUrl,
+              withCredentials: true,
+            });
+            // save and set auth token
+            setAccessToken(data.token);
+            originalRequest.headers.Authorization = `Bearer ${data.token}`;
+            return authApi(originalRequest);
+          } catch (err) {
+            // console.log('Token refresh failled !', err);
+            const tokenRefreshError = err as any;
+            tokenRefreshError.config._retry = true;
+            logOut();
+            return Promise.reject(tokenRefreshError);
+          }
         }
 
         return Promise.reject(error);
       }
     );
-  }, [authApi, setAccessToken]);
+  }, []);
 
   /**
    * Get Client Data
@@ -70,7 +81,6 @@ export const useAuthApi = () => {
   const getMe: any = async (): Promise<IApiResponse> => {
     try {
       const { data } = await authApi.get('get/me');
-
       return {
         sucess: true,
         data: {
@@ -105,14 +115,15 @@ export const useAuthApi = () => {
       const res = await authApi.post('login', values);
       // save or update user token
       setAccessToken(res.data.token);
-      const { sucess, data: clientData } = await getMe();
-      if (sucess) {
-        setAuthUser(clientData);
 
-        return { sucess: true, data: res.data };
-      }
+      const { data } = await getMe();
+      setAuthUser({
+        id: data._id,
+        name: data.name,
+        email: data.email,
+      });
 
-      return { sucess: false, message: 'Login failled !' };
+      return { sucess: true, data: res.data };
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 400) {
@@ -122,7 +133,7 @@ export const useAuthApi = () => {
           };
         }
       }
-      // console.log(error);
+      console.log(error);
       return {
         sucess: false,
         message: 'Login failled !',

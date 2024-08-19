@@ -5,4 +5,6 @@ export type AuthContextType = {
   setAuthUser: (value: IAuthUser) => void,
   setAccessToken: (token: string) => void,
   logOut: () => void,
+  isLoading: boolean,
+  setIsLoading: (value: boolean) => void,
 };
