@@ -1,29 +1,22 @@
-/* eslint-disable react-refresh/only-export-components */
-import {
-  createContext,
-  FC,
-  ReactNode,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import { createContext, FC, ReactNode, useMemo, useState } from 'react';
 import Cookies from 'js-cookie';
+import { CookieApp } from '../shared/constants/cookieapp';
+import { IAuthUser } from '../shared/interfaces/models.interface';
+import { AuthContextType } from '../shared/types/contexts.type';
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-type AuthUserProps = {
-  id: string,
-  name: string,
-  email: string,
-} | null;
-
-const ACCESS_COOKIE = '_sctoken';
-const AuthContext = createContext({});
+const AuthContext = createContext<AuthContextType>({
+  authUser: undefined,
+  setAuthUser: () => {},
+  setAccessToken: () => {},
+  logOut: () => {},
+});
 
 export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
-  const [authUser, setAuthUser] = useState<AuthUserProps>(null);
+  const [authUser, setAuthUser] = useState<IAuthUser | undefined>(undefined);
 
   /**
    * Define accesToken and save it in cookie
@@ -31,7 +24,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
    */
   const setAccessToken = (accessToken: string) => {
     const cookieTime = new Date(new Date().getTime() + 15 * 60 * 1000);
-    Cookies.set(ACCESS_COOKIE, accessToken, {
+    Cookies.set(CookieApp.ACCESS_COOKIE, accessToken, {
       path: '/',
       sameSite: 'Strict',
       secure: true,
@@ -40,18 +33,26 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     });
   };
 
+  /**
+   * LogOut User and clean session
+   */
+  const logOut = () => {
+    setAuthUser(undefined);
+    Cookies.remove(CookieApp.ACCESS_COOKIE, { path: '' });
+    Cookies.remove(CookieApp.REFRESH_COOKIE, { path: '' });
+  };
+
   const value = useMemo(
     () => ({
       authUser,
       setAuthUser,
       setAccessToken,
+      logOut,
     }),
     [authUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-export const useAuth = () => useContext(AuthContext);
 
 export default AuthContext;

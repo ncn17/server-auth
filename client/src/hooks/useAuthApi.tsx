@@ -2,16 +2,16 @@
 /* eslint-disable @typescript-eslint/lines-between-class-members */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
-import axios, {
-  AxiosError,
-  AxiosResponse,
-  InternalAxiosRequestConfig,
-} from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
-import { useContext, useEffect } from 'react';
-import { useAuth } from '../context/authContext';
+import { useEffect } from 'react';
+import { useAuth } from './useAuth';
+import { CookieApp } from '../shared/constants/cookieapp';
+import {
+  IApiResponse,
+  IUserConnect,
+} from '../shared/interfaces/models.interface';
 
-const ACCESS_COOKIE = '_sctoken';
 /**
  * Base service for call server api
  * @example const {registerUser} = useAuthApi();
@@ -31,10 +31,8 @@ export const useAuthApi = () => {
   useEffect(() => {
     authApi.interceptors.request.use(
       (config): InternalAxiosRequestConfig => {
-        const accessToken = Cookies.get(ACCESS_COOKIE);
+        const accessToken = Cookies.get(CookieApp.ACCESS_COOKIE);
         if (accessToken && accessToken.length > 100) {
-          console.log('clerc !!!', accessToken);
-          console.log('clerc', config);
           config.headers.Authorization = `Bearer ${accessToken}`;
         }
         return config;
@@ -43,14 +41,6 @@ export const useAuthApi = () => {
         return Promise.reject(error);
       }
     );
-
-    // authApi.get('get/me').then((res) => {
-    //   setAuthUser({
-    //     id: res.data._id,
-    //     name: res.data.name,
-    //     email: res.data.email,
-    //   });
-    // });
 
     authApi.interceptors.response.use(
       (response) => response,
@@ -72,15 +62,19 @@ export const useAuthApi = () => {
       }
     );
 
-    // init user
-    // checkUserStatus();
+    // try init user
+    // getMe().then((res) => {
+    //   if (res.sucess) {
+    //     setAuthUser(res.data);
+    //   }
+    // });
   }, []);
 
   /**
    * Get Client Data
    * @returns ApiResponse
    */
-  const getMe: any = async (): Promise<ApiResponse> => {
+  const getMe: any = async (): Promise<IApiResponse> => {
     try {
       const { data } = await authApi.get('get/me');
 
@@ -94,7 +88,6 @@ export const useAuthApi = () => {
       };
     } catch (err) {
       // console.log(err);
-
       return {
         sucess: false,
         message: 'Get Client failled !',
@@ -114,10 +107,10 @@ export const useAuthApi = () => {
    * @param values {UserConnect}
    * @returns ApiResponse
    */
-  const signUp = async (values: UserConnect): Promise<ApiResponse> => {
+  const signUp = async (values: IUserConnect): Promise<IApiResponse> => {
     try {
       const res = await authApi.post('login', values);
-      // save user token
+      // save or update user token
       setAccessToken(res.data.token);
       const { sucess, data: clientData } = await getMe();
       if (sucess) {
@@ -146,14 +139,3 @@ export const useAuthApi = () => {
 
   return { signIn, signUp, getMe, authApi };
 };
-
-export interface UserConnect {
-  email: string;
-  password: string;
-}
-
-export interface ApiResponse {
-  sucess: boolean;
-  message?: string;
-  data?: any;
-}

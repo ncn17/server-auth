@@ -1,9 +1,15 @@
 import { Box, Button, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/authContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 const Header = () => {
-  const { authUser, setAuthUser } = useAuth();
+  const navigate = useNavigate();
+  const { authUser, logOut } = useAuth();
+
+  const handleLogOut = () => {
+    logOut();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <Box
@@ -45,7 +51,7 @@ const Header = () => {
             <Button
               variant="contained"
               sx={{ backgroundColor: '#f00' }}
-              onClick={() => setAuthUser(null)}
+              onClick={() => handleLogOut()}
             >
               LogOut
             </Button>
