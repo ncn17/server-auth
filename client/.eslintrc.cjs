@@ -25,6 +25,7 @@ module.exports = {
     'react/function-component-definition': 0,
     '@typescript-eslint/no-explicit-any': 0,
     'react/jsx-props-no-spreading': 0,
+    'no-underscore-dangle': 0,
   },
   parserOptions: {
     ecmaVersion: 'latest',

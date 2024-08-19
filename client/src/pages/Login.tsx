@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FormikHelpers } from 'formik';
 import * as yup from 'yup';
 import { AppForm } from '../components/formik';
 import { TextFieldForm } from '../components/texfieldForm';
-import { useAuthApi, UserConnect } from '../hooks/useAuthApi';
+import { useAuthApi } from '../hooks/useAuthApi';
+import { useAuth } from '../hooks/useAuth';
 
 const controlSchema = yup.object().shape({
   email: yup.string().email('Invalid email passed').required('required'),
@@ -16,10 +17,17 @@ export const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signUp } = useAuthApi();
+  const { authUser } = useAuth();
   const [errMsg, setErrMsg] = useState<string | undefined>('');
 
+  useLayoutEffect(() => {
+    if (authUser) {
+      navigate('/');
+    }
+  }, [authUser, navigate]);
+
   const handleFormSubmit: any = async (
-    values: UserConnect,
+    values: any,
     { resetForm, setFieldValue }: FormikHelpers<object>
   ) => {
     const res = await signUp(values);

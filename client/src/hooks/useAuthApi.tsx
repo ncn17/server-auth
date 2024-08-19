@@ -1,16 +1,22 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable @typescript-eslint/lines-between-class-members */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { useAuth } from './useAuth';
 import { CookieApp } from '../shared/constants/cookieapp';
 import {
   IApiResponse,
   IUserConnect,
 } from '../shared/interfaces/models.interface';
+
+export const authApi = axios.create({
+  baseURL: 'http://127.0.0.1:5017/api',
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 /**
  * Base service for call server api
@@ -20,18 +26,11 @@ import {
 export const useAuthApi = () => {
   const { setAccessToken, setAuthUser } = useAuth();
 
-  const authApi = axios.create({
-    baseURL: 'http://127.0.0.1:5017/api',
-    withCredentials: true,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
   useEffect(() => {
     authApi.interceptors.request.use(
       (config): InternalAxiosRequestConfig => {
         const accessToken = Cookies.get(CookieApp.ACCESS_COOKIE);
+        console.log('req => ', config);
         if (accessToken && accessToken.length > 100) {
           config.headers.Authorization = `Bearer ${accessToken}`;
         }
@@ -49,6 +48,7 @@ export const useAuthApi = () => {
 
         if (error.response.status === 401 && !originalRequest.retry) {
           originalRequest.retry = true;
+          console.log('refresh => ');
           // try refresh token
           const { data } = await authApi.get('refresh-token');
           // save and set auth token
@@ -61,14 +61,7 @@ export const useAuthApi = () => {
         return Promise.reject(error);
       }
     );
-
-    // try init user
-    // getMe().then((res) => {
-    //   if (res.sucess) {
-    //     setAuthUser(res.data);
-    //   }
-    // });
-  }, []);
+  }, [authApi, setAccessToken]);
 
   /**
    * Get Client Data

@@ -1,8 +1,16 @@
-import { createContext, FC, ReactNode, useMemo, useState } from 'react';
+import {
+  createContext,
+  FC,
+  ReactNode,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import Cookies from 'js-cookie';
 import { CookieApp } from '../shared/constants/cookieapp';
 import { IAuthUser } from '../shared/interfaces/models.interface';
 import { AuthContextType } from '../shared/types/contexts.type';
+import axios from 'axios';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -32,6 +40,34 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       expires: cookieTime,
     });
   };
+
+  const AutoLoginUser = async () => {
+    try {
+      const accessToken = Cookies.get(CookieApp.ACCESS_COOKIE);
+      const api = axios.create({
+        baseURL: 'http://127.0.0.1:5017/api',
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const { data } = await api.get('get/me');
+
+      setAccessToken(data.token);
+      setAuthUser({
+        id: data._id,
+        name: data.name,
+        email: data.email,
+      });
+    } catch (err) {
+      // console.log(err);
+    }
+  };
+
+  useLayoutEffect(() => {
+    AutoLoginUser();
+  }, []);
 
   /**
    * LogOut User and clean session
