@@ -66,7 +66,7 @@ export const Login = () => {
             sx={{ width: '350px', border: '1px solid grey', padding: '20px' }}
           >
             <Typography variant="h1" fontSize="20px" m={2}>
-              Login
+              LOGIN
             </Typography>
 
             {errMsg && (

@@ -18,7 +18,7 @@ import { CookieApp } from '../shared/constants/cookieapp';
 export const useAuthApi = () => {
   const { setAccessToken, setAuthUser, logOut } = useAuth();
 
-  const ApiUrl = 'http://127.0.0.1:5017/api';
+  const ApiUrl = import.meta.env.VITE_API_URL;
   const authApi = axios.create({
     baseURL: ApiUrl,
     withCredentials: true,

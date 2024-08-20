@@ -61,7 +61,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       const authServer = axios.create({
-        baseURL: 'http://127.0.0.1:5017/api',
+        baseURL: import.meta.env.VITE_API_URL,
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
