@@ -13,7 +13,11 @@ app.use(cookieParser(process.env.COOKIE_KEY));
 mongoose.connect(process.env.DATABASE_URL);
 app.use(
   cors({
-    origin: [process.env.CLIENT_ORIGN],
+    origin: [
+      process.env.CLIENT_ORIGN,
+      'http://127.0.0.1:8080',
+      'http://192.168.1.20:8080',
+    ],
     credentials: true,
     exposedHeaders: 'Token',
   })

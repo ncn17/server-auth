@@ -19,6 +19,7 @@ const UnauthorizedResponse = (res) => {
 const AuthenticateUser = async (req, res, next) => {
   const authToken =
     req.headers['authorization']?.replace('Bearer ', '') || undefined;
+  console.log(authToken);
   if (!authToken) {
     return UnauthorizedResponse(res);
   }
@@ -42,6 +43,7 @@ const AuthenticateUser = async (req, res, next) => {
  */
 const RefreshToken = async (req, res, next) => {
   const refreshToken = req.signedCookies.refreshToken;
+  console.log(refreshToken);
   if (!refreshToken || refreshToken.length < 150) {
     return UnauthorizedResponse(res);
   }
@@ -51,7 +53,7 @@ const RefreshToken = async (req, res, next) => {
     process.env.TOKEN_KEY,
     async (err, decodedValue) => {
       if (err) {
-        console.log(err);
+        //console.log(err);
         return UnauthorizedResponse(res);
       }
 

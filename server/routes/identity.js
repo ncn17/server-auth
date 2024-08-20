@@ -8,6 +8,7 @@ const Identity = async (req, res, next) => {
     email: res.locals.email,
   });
   user.password = undefined;
+  user.refreshToken = undefined;
 
   res.json(user);
 };
