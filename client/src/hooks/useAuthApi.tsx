@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/return-await */
-/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
-import { useEffect, useLayoutEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 import { useAuth } from './useAuth';
@@ -72,7 +71,7 @@ export const useAuthApi = () => {
         return Promise.reject(error);
       }
     );
-  }, []);
+  }, [authApi, logOut, setAccessToken]);
 
   /**
    * Get Client Data
@@ -133,7 +132,7 @@ export const useAuthApi = () => {
           };
         }
       }
-      console.log(error);
+
       return {
         sucess: false,
         message: 'Login failled !',

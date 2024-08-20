@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-no-useless-fragment */
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FormikHelpers } from 'formik';
@@ -26,7 +26,7 @@ export const Login = () => {
     if (authUser) {
       navigate('/');
     }
-  }, [authUser]);
+  }, [authUser, navigate]);
 
   const handleFormSubmit: any = async (
     values: any,

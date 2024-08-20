@@ -10,7 +10,7 @@ export default function Home() {
 
   const handleSubmit = async () => {
     try {
-      const res = await getMe();
+      await getMe();
     } catch (error) {
       // console.log(error);
     }

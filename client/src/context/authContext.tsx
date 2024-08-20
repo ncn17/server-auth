@@ -1,10 +1,8 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable @typescript-eslint/return-await */
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   createContext,
   FC,
   ReactNode,
-  useEffect,
   useLayoutEffect,
   useMemo,
   useState,
@@ -41,7 +39,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     Cookies.set(CookieApp.ACCESS_COOKIE, accessToken, {
       path: '/',
       sameSite: 'Strict',
-      secure: true,
+      // secure: true,
       partitioned: true,
       expires: cookieTime,
     });
